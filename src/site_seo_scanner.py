@@ -5,17 +5,13 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from string import punctuation
 
+from fpdf import FPDF
 
 class result:
-    def __init__(self,title, canonical, h1, h2, h3, h4, h5, h6, words, images, links):
+    def __init__(self,title, canonical, hs, words, images, links):
         self.title = title
         self.canonical = canonical
-        self.h1 = h1
-        self.h2 = h2
-        self.h3 = h3
-        self.h4 = h4
-        self.h5 = h5
-        self.h6 = h6
+        self.hs = hs
         self.words = words
         self.images = images      
         self.links = links
@@ -26,12 +22,8 @@ class result:
         print(f"Canonical: {self.canonical}")
         print()
         print("H Numbers:")
-        print(f"- H1 {self.h1}")
-        print(f"- H2 {self.h2}")
-        print(f"- H3 {self.h3}")
-        print(f"- H4 {self.h4}")
-        print(f"- H5 {self.h5}")
-        print(f"- H6 {self.h6}")
+        for h in self.hs:
+            print(f"{h[0]} * {h[1]}")
         print()
         print("Words: ")
         for word in self.words:
@@ -47,6 +39,48 @@ class result:
         print("Links: ")
         for link in self.links:
             print(f"- {link}")
+
+    def export_pdf(self):
+
+        pdf = FPDF()
+        
+        pdf.add_page()
+        
+        pdf.set_font("Arial", size = 15)
+        pdf.cell(200, 10, txt = f"*** {self.title} ***", 
+                ln = 1, align = 'C')     
+        pdf.cell(200, 10, txt = f"Canonical: {self.canonical}", 
+                ln = 1, align = 'C')
+        pdf.cell(200, 10, txt = f"H Numbers:", 
+                ln = 1, align = 'C')
+        for h in self.hs:
+            pdf.cell(100, 10, txt = f"{h[0]} * {h[1]}", 
+                ln = 1, align = 'C')
+        pdf.cell(200, 10, txt = "Words: ", 
+                ln = 1, align = 'C')
+        for word in self.words:
+            pdf.cell(100, 10, txt = f"- {word[0]} * {word[1]}", 
+                ln = 1, align = 'C')            
+
+        pdf.cell(200, 10, txt = "Images: ", 
+                ln = 1, align = 'C')        
+        for image in self.images:
+            try:
+                pdf.cell(100, 10, txt = f"- {image[0]} * {image[1]}", 
+                    ln = 1, align = 'C')                  
+            except:
+                pdf.cell(100, 10, txt = f"- {image[0]}", 
+                    ln = 1, align = 'C')                   
+        pdf.cell(200, 10, txt = "Links: ", 
+                ln = 1, align = 'C') 
+        print("Links: ")
+        for link in self.links:
+            pdf.cell(100, 10, txt = f"- {link}", 
+                ln = 1, align = 'C')
+
+
+    
+        pdf.output(f"{self.title}seo_analysis.pdf")
 
 class site_seo_scanner:
     def __init__(self, domain, https = False, sitemap = False):
@@ -87,12 +121,7 @@ class site_seo_scanner:
         the_result = result(
             self.title(source),
             self.canonical(source),
-            self.h1(source),
-            self.h2(source),
-            self.h3(source),
-            self.h4(source),
-            self.h5(source),
-            self.h6(source),
+            self.hs(source),
             self.words(source),
             self.images(source),
             self.links(source),
@@ -137,30 +166,19 @@ class site_seo_scanner:
         return imagelist   
          
     
-    def h1(self, source):
-        return len(source.find_all('h1'))
+    def hs(self, source):
+        the_list = []
+        for i in range(1, 7, 1):
+            the_list.append(
+                (f"H{i}", len(source.find_all(f"h{i}")))
+                )
+        return the_list
     
-    def h2(self, source):
-        return len(source.find_all('h2'))    
-    
-    def h3(self, source):
-        return len(source.find_all('h3'))      
-    
-    def h4(self, source):
-        return len(source.find_all('h4'))     
-    
-    def h5(self, source):
-        return len(source.find_all('h5'))  
- 
-    def h6(self, source):
-        return len(source.find_all('h6'))
 
     def print_results(self):
         for result in self.results:
             result.print_result()
-    
 
-
-
-the_site_seo_scanner = site_seo_scanner("decentra-network.github.io/Decentra-Network", True)
-the_site_seo_scanner.print_results()
+    def export_pdf_results(self):
+        for result in self.results:
+            result.export_pdf()
