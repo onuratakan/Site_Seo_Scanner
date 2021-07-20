@@ -1,19 +1,13 @@
-import time
 import requests
-from requests.api import request
-import json
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-from bs4.builder import HTML
-
 
 from collections import Counter
 from string import punctuation
 
 
 class result:
-    def __init__(self,title, canonical, h1, h2, h3, h4, h5, h6, words, image, alt, links):
+    def __init__(self,title, canonical, h1, h2, h3, h4, h5, h6, words, images, links):
         self.title = title
         self.canonical = canonical
         self.h1 = h1
@@ -23,8 +17,7 @@ class result:
         self.h5 = h5
         self.h6 = h6
         self.words = words
-        self.image = image        
-        self.alt = alt
+        self.images = images      
         self.links = links
 
     def print_result(self):
@@ -44,12 +37,19 @@ class result:
         for word in self.words:
             print(f"- {word[0]} * {word[1]}")
         print()
-        print(self.image)
-        print(self.alt)
-        print(self.links)
+        print("Images: ")
+        for image in self.images:
+            try:
+                print(f"- {image[0]} * {image[1]}")
+            except:
+                print(f"- {image[0]}")
+        print()
+        print("Links: ")
+        for link in self.links:
+            print(f"- {link}")
 
 class site_seo_scanner:
-    def __init__(self, domain, https = False):
+    def __init__(self, domain, https = False, sitemap = False):
         if https:
             self.url = f"https://{domain}/"
         else:
@@ -59,20 +59,24 @@ class site_seo_scanner:
         # Robots.txt
         self.robotsource = BeautifulSoup(requests.get(f"{self.url}robots.txt").content, 'html.parser').get_text()
 
-        # Sitemap.xml
-        self.sitemapsoup = BeautifulSoup(requests.get(f"{self.url}sitemap.xml").content, 'lxml')
-        self.sitemapurls = self.sitemapsoup.find_all("loc")
+        if sitemap:
+            self.sitemapsoup = BeautifulSoup(requests.get(f"{self.url}sitemap.xml").content, 'lxml')
+            self.sitemapurls = self.sitemapsoup.find_all("loc")
 
         self.results = []
+
+
+        self.sitemap = sitemap
 
         self.start()
 
 
     
     def start(self):
-        if not len(self.sitemapurls) == 0:
-            for sitemapurl in self.sitemapurls:
-                self.scan(sitemapurl.text)
+        if self.sitemap:
+            if not len(self.sitemapurls) == 0:
+                for sitemapurl in self.sitemapurls:
+                    self.scan(sitemapurl.text)
         else:
             self.scan(self.url)
 
@@ -90,8 +94,7 @@ class site_seo_scanner:
             self.h5(source),
             self.h6(source),
             self.words(source),
-            self.image(source),
-            self.alt(source),
+            self.images(source),
             self.links(source),
         )
         self.results.append(the_result)
@@ -101,9 +104,7 @@ class site_seo_scanner:
             return titles.get_text()        
 
     def links(self, source):
-        return json.dumps(
-            [ x.get('href') for x in source.findAll('a') ]
-        )
+        return [ x.get('href') for x in source.findAll('a') ]
     
     def canonical(self, source):
         try:
@@ -118,30 +119,23 @@ class site_seo_scanner:
                 ).most_common()
 
     
-    def image(self, source):
+    def images(self, source):
         imagesfinder = source.find_all('img')
         imagelist = []
         for images in imagesfinder:
                 try:
+                    foundedalts = images['alt']
+                except:
+                    foundedalts = "Alt missing"            
+                try:
                     foundedimages = images['src']
                 except:
                     foundedimages = images['src'], "Don't have image"
-                images = foundedimages
+                    
+                images = (foundedalts, foundedimages)
                 imagelist.append(images)
-        return json.dumps(imagelist)        
-    
-    
-    def alt(self, source):
-        imagealtsfinder = source.find_all('img')
-        altslist = []
-        for alts in imagealtsfinder:
-                try:
-                    foundedalts = alts['alt']
-                except:
-                    foundedalts = "Alt missing"
-                alts = foundedalts
-                altslist.append(alts)
-        return json.dumps(altslist)       
+        return imagelist   
+         
     
     def h1(self, source):
         return len(source.find_all('h1'))
@@ -159,10 +153,14 @@ class site_seo_scanner:
         return len(source.find_all('h5'))  
  
     def h6(self, source):
-        return len(source.find_all('h6'))  
+        return len(source.find_all('h6'))
+
+    def print_results(self):
+        for result in self.results:
+            result.print_result()
     
 
 
 
-the_site_seo_scanner = site_seo_scanner("decentra-network.github.io/Decentra-Network", True)        
-the_site_seo_scanner.results[0].print_result()
+the_site_seo_scanner = site_seo_scanner("decentra-network.github.io/Decentra-Network", True)
+the_site_seo_scanner.print_results()
