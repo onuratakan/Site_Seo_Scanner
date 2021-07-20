@@ -80,7 +80,7 @@ class result:
 
 
     
-        pdf.output(f"{self.title}seo_analysis.pdf")
+        pdf.output(f"export/pdf/{self.title}seo_analysis.pdf")
 
 class site_seo_scanner:
     def __init__(self, domain, https = False, sitemap = False):
