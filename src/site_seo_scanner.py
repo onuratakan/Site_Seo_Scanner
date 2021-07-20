@@ -43,7 +43,7 @@ class result:
 
     def export_pdf(self):
 
-        pdf = FPDF()
+        pdf = FPDF('P', 'mm', 'A4')
         
         pdf.add_page()
         
