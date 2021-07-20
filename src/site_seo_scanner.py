@@ -8,7 +8,8 @@ from string import punctuation
 from fpdf import FPDF
 
 class result:
-    def __init__(self,title, canonical, hs, words, images, links):
+    def __init__(self, domain, title, canonical, hs, words, images, links):
+        self.domain = domain
         self.title = title
         self.canonical = canonical
         self.hs = hs
@@ -73,21 +74,20 @@ class result:
                     ln = 1, align = 'C')                   
         pdf.cell(200, 10, txt = "Links: ", 
                 ln = 1, align = 'C') 
-        print("Links: ")
         for link in self.links:
             pdf.cell(100, 10, txt = f"- {link}", 
                 ln = 1, align = 'C')
 
 
-    
-        pdf.output(f"export/pdf/{self.title}seo_analysis.pdf")
+        pdf.output(f"export/pdf/{self.domain}-seo_analysis.pdf")
 
 class site_seo_scanner:
     def __init__(self, domain, https = False, sitemap = False):
+        self.domain = domain
         if https:
-            self.url = f"https://{domain}/"
+            self.url = f"https://{self.domain}/"
         else:
-            self.url = f"http://{domain}/"
+            self.url = f"http://{self.domain}/"
         
 
         # Robots.txt
@@ -119,6 +119,7 @@ class site_seo_scanner:
         source = BeautifulSoup(requests.get(url).text, 'html.parser')
 
         the_result = result(
+            self.domain,
             self.title(source),
             self.canonical(source),
             self.hs(source),
