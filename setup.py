@@ -5,7 +5,7 @@ version='0.1.0',
 description="""The site seo scanner.
 """,
 long_description="""
-# Site Seo Scanner | ![Made_with_python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg) ![Licence](https://img.shields.io/github/license/onuratakan/site_seo_scanner.svg)
+# Site Seo Scanner | ![Made_with_python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg) ![Licence](https://img.shields.io/github/license/onuratakan/Site_Seo_Scanner.svg)
 # Installing
 ```console
 pip install Site-Seo-Scanner
@@ -16,7 +16,7 @@ from ssc import SSC
 ```
 """,
 long_description_content_type='text/markdown',
-url='https://github.com/onuratakan/site_seo_scanner',
+url='https://github.com/onuratakan/Site_Seo_Scanner',
 author='Onur Atakan ULUSOY',
 author_email='atadogan06@gmail.com',
 license='MIT',
